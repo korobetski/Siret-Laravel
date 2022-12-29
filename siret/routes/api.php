@@ -19,4 +19,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::apiResource('/entreprises', \App\Http\Controllers\EntrepriseController::class);
+Route::apiResource('/entreprises', EntrepriseController::class);
+Route::get('/insee/{siret}', [EntrepriseController::class, 'insee']);

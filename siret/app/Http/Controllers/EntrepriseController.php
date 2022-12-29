@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Entreprise;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class EntrepriseController extends Controller
 {
@@ -14,10 +15,10 @@ class EntrepriseController extends Controller
      */
     public function index()
     {
-        $entrepises = Entreprise::all();
+        $entreprises = Entreprise::all();
         return [
-            'status' => 1,
-            'datas' => $entrepises
+            'statut' => 1,
+            'datas' => $entreprises
         ];
     }
 
@@ -41,18 +42,18 @@ class EntrepriseController extends Controller
      */
     public function show($siret)
     {
-        $entrepise = Entreprise::query()->where('siret', $siret)->first();
+        $entreprise = Entreprise::query()->where('siret', $siret)->first();
 
-        if ($entrepise == null) {
+        if ($entreprise == null) {
             return [
-                'status' => 2,
+                'statut' => 2,
                 'error' => 'STR_SIRET_NOT_FOUND_IN_DATABASE'
             ];
         }
 
         return [
-            'status' => 1,
-            'datas' => $entrepise,
+            'statut' => 1,
+            'datas' => $entreprise,
         ];
     }
 
@@ -86,9 +87,46 @@ class EntrepriseController extends Controller
      * @param  int  $siren
      * @return string $tvaCode
      */
-    public function getTVACode($siren):string {
+    public function getTVACode($siren):string
+    {
         // https://fr.wikipedia.org/wiki/Code_Insee#Num%C3%A9ro_de_TVA_intracommunautaire
         $tvaKey = (12 + 3 * ($siren % 97)) % 97;
         return sprintf('FR%02d%d', $tvaKey, $siren);
+    }
+
+
+    public function insee($siret)
+    {
+        // clé perso de l'api Insee
+        $token = "cf20aa72-d7a3-3995-b7d0-196f7f805e1b";
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer '.$token,
+            'Accept' => 'application/json',
+        ])->withOptions(['verify' => false])->get('https://api.insee.fr/entreprises/sirene/V3/siret/'.$siret);
+        
+        $inseeJson = $response->json();
+        
+        if ($inseeJson['header']['statut'] != 200) {
+            return [
+                'statut' => 2,
+                'error' => 'STR_SIRET_NOT_FOUND_IN_INSEE_API'
+            ];
+        }
+
+        $datas = [
+            'siret' => $siret,
+            'siren' => $inseeJson['etablissement']['siren'],
+            'tva' => $this->getTVACode($inseeJson['etablissement']['siren']),
+            'numeroVoie' => $inseeJson['etablissement']['adresseEtablissement']['numeroVoieEtablissement'],
+            'typeVoie' => $inseeJson['etablissement']['adresseEtablissement']['typeVoieEtablissement'],
+            'libelleVoie' => $inseeJson['etablissement']['adresseEtablissement']['libelleVoieEtablissement'],
+            'codePostal' => $inseeJson['etablissement']['adresseEtablissement']['codePostalEtablissement'],
+            'libelleCommune' => $inseeJson['etablissement']['adresseEtablissement']['libelleCommuneEtablissement'],
+            'dateCreation' => $inseeJson['etablissement']['dateCreationEtablissement'],
+        ];
+        return [
+            'statut' => 1,
+            'datas' => $datas,
+        ];
     }
 }

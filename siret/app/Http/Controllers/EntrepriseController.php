@@ -117,6 +117,7 @@ class EntrepriseController extends Controller
             'siret' => $siret,
             'siren' => $inseeJson['etablissement']['siren'],
             'tva' => $this->getTVACode($inseeJson['etablissement']['siren']),
+            'nom' => $inseeJson['etablissement']['uniteLegale']['denominationUniteLegale'],
             'numeroVoie' => $inseeJson['etablissement']['adresseEtablissement']['numeroVoieEtablissement'],
             'typeVoie' => $inseeJson['etablissement']['adresseEtablissement']['typeVoieEtablissement'],
             'libelleVoie' => $inseeJson['etablissement']['adresseEtablissement']['libelleVoieEtablissement'],

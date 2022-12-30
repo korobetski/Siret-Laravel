@@ -30,19 +30,30 @@ class EntrepriseController extends Controller
      */
     public function store(Request $request)
     {
-        /*
-        */
+        $entreprise = Entreprise::create($request->input());
+
+        if ($entreprise == null) {
+            return [
+                'statut' => 2,
+                'error' => 'STR_DATABASE_INSERT_ERROR'
+            ];
+        }
+
+        return [
+            'statut' => 1,
+            'datas' => $entreprise,
+        ];
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $siret
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($siret)
+    public function show($id)
     {
-        $entreprise = Entreprise::query()->where('siret', $siret)->first();
+        $entreprise = Entreprise::find($id);
 
         if ($entreprise == null) {
             return [
@@ -61,23 +72,58 @@ class EntrepriseController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $siret
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $siret)
+    public function update(Request $request, $id)
     {
-        //
+        $entreprise = Entreprise::find($id);
+        if ($entreprise == null) {
+            return [
+                'statut' => 2,
+                'error' => 'STR_SIRET_NOT_FOUND_IN_DATABASE'
+            ];
+        }
+
+        $nouvellesDonnees = $request->input();
+        $entreprise->siret = $nouvellesDonnees['siret'];
+        $entreprise->siren = $nouvellesDonnees['siren'];
+        $entreprise->tva = $nouvellesDonnees['tva'];
+        $entreprise->nom = $nouvellesDonnees['nom'];
+        $entreprise->numeroVoie = $nouvellesDonnees['numeroVoie'];
+        $entreprise->typeVoie = $nouvellesDonnees['typeVoie'];
+        $entreprise->libelleVoie = $nouvellesDonnees['libelleVoie'];
+        $entreprise->codePostal = $nouvellesDonnees['codePostal'];
+        $entreprise->libelleCommune = $nouvellesDonnees['libelleCommune'];
+        $entreprise->dateCreation = $nouvellesDonnees['dateCreation'];
+        $entreprise->save();
+
+        return [
+            'statut' => 1,
+            'datas' => $entreprise,
+        ];
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $siret
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($siret)
+    public function destroy($id)
     {
-        //
+        $response = Entreprise::destroy($id);
+        if ($response == 0) {
+            return [
+                'statut' => 2,
+                'error' => 'STR_DELETE_ENTRY_ERROR'
+            ];
+        }
+
+        return [
+            'statut' => 1,
+            'datas' => 'STR_ENTRY_DELETED',
+        ];
     }
 
 

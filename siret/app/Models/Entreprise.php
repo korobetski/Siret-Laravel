@@ -9,6 +9,13 @@ class Entreprise extends Model
 {
     use HasFactory;
 
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'entreprises';
+
     protected $fillable = [
         'id',
         'siret',

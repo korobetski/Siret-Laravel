@@ -17,7 +17,7 @@ class EntrepriseController extends Controller
     {
         $entreprises = Entreprise::all();
         return [
-            'statut' => 1,
+            'statut' => 200,
             'datas' => $entreprises
         ];
     }
@@ -34,13 +34,13 @@ class EntrepriseController extends Controller
 
         if ($entreprise == null) {
             return [
-                'statut' => 2,
+                'statut' => 400,
                 'error' => 'STR_DATABASE_INSERT_ERROR'
             ];
         }
 
         return [
-            'statut' => 1,
+            'statut' => 201,
             'datas' => $entreprise,
         ];
     }
@@ -57,13 +57,13 @@ class EntrepriseController extends Controller
 
         if ($entreprise == null) {
             return [
-                'statut' => 2,
-                'error' => 'STR_SIRET_NOT_FOUND_IN_DATABASE'
+                'statut' => 404,
+                'error' => 'STR_ID_NOT_FOUND_IN_DATABASE'
             ];
         }
 
         return [
-            'statut' => 1,
+            'statut' => 200,
             'datas' => $entreprise,
         ];
     }
@@ -80,8 +80,8 @@ class EntrepriseController extends Controller
         $entreprise = Entreprise::find($id);
         if ($entreprise == null) {
             return [
-                'statut' => 2,
-                'error' => 'STR_SIRET_NOT_FOUND_IN_DATABASE'
+                'statut' => 404,
+                'error' => 'STR_ID_NOT_FOUND_IN_DATABASE'
             ];
         }
 
@@ -99,7 +99,7 @@ class EntrepriseController extends Controller
         $entreprise->save();
 
         return [
-            'statut' => 1,
+            'statut' => 200,
             'datas' => $entreprise,
         ];
     }
@@ -115,13 +115,13 @@ class EntrepriseController extends Controller
         $response = Entreprise::destroy($id);
         if ($response == 0) {
             return [
-                'statut' => 2,
+                'statut' => 404,
                 'error' => 'STR_DELETE_ENTRY_ERROR'
             ];
         }
 
         return [
-            'statut' => 1,
+            'statut' => 200,
             'datas' => 'STR_ENTRY_DELETED',
         ];
     }
@@ -144,7 +144,7 @@ class EntrepriseController extends Controller
     public function insee($siret)
     {
         // clé perso de l'api Insee
-        $token = "cf20aa72-d7a3-3995-b7d0-196f7f805e1b";
+        $token = "96b6a150-dc78-3da0-8cf2-9a8a93453bbf";
         $response = Http::withHeaders([
             'Authorization' => 'Bearer '.$token,
             'Accept' => 'application/json',
@@ -154,8 +154,8 @@ class EntrepriseController extends Controller
         
         if ($inseeJson['header']['statut'] != 200) {
             return [
-                'statut' => 2,
-                'error' => 'STR_SIRET_NOT_FOUND_IN_INSEE_API'
+                'statut' => $inseeJson['header']['statut'],
+                'error' => $inseeJson['header']['message'],
             ];
         }
 
@@ -172,7 +172,7 @@ class EntrepriseController extends Controller
             'dateCreation' => $inseeJson['etablissement']['dateCreationEtablissement'],
         ];
         return [
-            'statut' => 1,
+            'statut' => 200,
             'datas' => $datas,
         ];
     }

@@ -15,10 +15,11 @@ class EntrepriseController extends Controller
      */
     public function index()
     {
-        $entreprises = Entreprise::all();
+        // TODO : mettre la limite de pagination en paramètre
+        $entreprises = Entreprise::paginate(2)->withPath('/entreprises');
         return [
             'statut' => 200,
-            'datas' => $entreprises
+            'pagination' => $entreprises
         ];
     }
 

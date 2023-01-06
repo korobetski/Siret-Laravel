@@ -34,10 +34,7 @@ class EntrepriseController extends Controller
         $entreprise = Entreprise::create($request->input());
 
         if ($entreprise == null) {
-            return [
-                'statut' => 400,
-                'error' => 'STR_DATABASE_INSERT_ERROR'
-            ];
+            return $this->errorResponse(400, 'STR_DATABASE_INSERT_ERROR');
         }
 
         return [
@@ -54,13 +51,13 @@ class EntrepriseController extends Controller
      */
     public function show($id)
     {
-        $entreprise = Entreprise::find($id);
+        if (!is_numeric($id)) {
+            return $this->errorResponse(400, 'STR_ID_MUST_BE_NUMERIC');
+        }
 
+        $entreprise = Entreprise::find($id);
         if ($entreprise == null) {
-            return [
-                'statut' => 404,
-                'error' => 'STR_ID_NOT_FOUND_IN_DATABASE'
-            ];
+            return $this->errorResponse(404, 'STR_ID_NOT_FOUND_IN_DATABASE');
         }
 
         return [
@@ -78,12 +75,13 @@ class EntrepriseController extends Controller
      */
     public function update(Request $request, $id)
     {
+        if (!is_numeric($id)) {
+            return $this->errorResponse(400, 'STR_ID_MUST_BE_NUMERIC');
+        }
+
         $entreprise = Entreprise::find($id);
         if ($entreprise == null) {
-            return [
-                'statut' => 404,
-                'error' => 'STR_ID_NOT_FOUND_IN_DATABASE'
-            ];
+            return $this->errorResponse(404, 'STR_ID_NOT_FOUND_IN_DATABASE');
         }
 
         $nouvellesDonnees = $request->input();
@@ -113,12 +111,13 @@ class EntrepriseController extends Controller
      */
     public function destroy($id)
     {
+        if (!is_numeric($id)) {
+            return $this->errorResponse(400, 'STR_ID_MUST_BE_NUMERIC');
+        }
+
         $response = Entreprise::destroy($id);
         if ($response == 0) {
-            return [
-                'statut' => 404,
-                'error' => 'STR_DELETE_ENTRY_ERROR'
-            ];
+            return $this->errorResponse(404, 'STR_DELETE_ENTRY_ERROR');
         }
 
         return [
@@ -127,14 +126,13 @@ class EntrepriseController extends Controller
         ];
     }
 
-
     /**
      * Retourne le code TVA d'après le siren (9 chiffres).
      *
      * @param  int  $siren
      * @return string $tvaCode
      */
-    public function getTVACode($siren):string
+    private function getTVACode($siren):string
     {
         // https://fr.wikipedia.org/wiki/Code_Insee#Num%C3%A9ro_de_TVA_intracommunautaire
         $tvaKey = (12 + 3 * ($siren % 97)) % 97;
@@ -154,10 +152,7 @@ class EntrepriseController extends Controller
         $inseeJson = $response->json();
         
         if ($inseeJson['header']['statut'] != 200) {
-            return [
-                'statut' => $inseeJson['header']['statut'],
-                'error' => $inseeJson['header']['message'],
-            ];
+            return $this->errorResponse($inseeJson['header']['statut'], $inseeJson['header']['message']);
         }
 
         $datas = [
@@ -175,6 +170,20 @@ class EntrepriseController extends Controller
         return [
             'statut' => 200,
             'datas' => $datas,
+        ];
+    }
+
+    /**
+     * Formate les erreurs en réponse json
+     *
+     * @param  int  $code codes de statut de réponse HTTP
+     * @param  string  $message description de l'erreur
+     * @return object réponse en json
+     */
+    private function errorResponse($code, $message) {
+        return [
+            'statut' => $code,
+            'error' => $message
         ];
     }
 }

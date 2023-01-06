@@ -13,3 +13,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::view('/swagger', 'swagger');
+
+Route::fallback(function () {
+    return [
+        'statut' => 404,
+        'error' => "Not Found",
+    ];
+});

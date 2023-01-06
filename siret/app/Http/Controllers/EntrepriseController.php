@@ -185,19 +185,31 @@ class EntrepriseController extends Controller
         if ($inseeJson['header']['statut'] != 200) {
             return $this->errorResponse($inseeJson['header']['statut'], $inseeJson['header']['message']);
         }
-
+        
+        $etablissement = $inseeJson['etablissement'];
         $datas = [
             'siret' => $siret,
-            'siren' => $inseeJson['etablissement']['siren'],
-            'tva' => $this->getTVACode($inseeJson['etablissement']['siren']),
-            'nom' => $inseeJson['etablissement']['uniteLegale']['denominationUniteLegale'],
-            'numeroVoie' => $inseeJson['etablissement']['adresseEtablissement']['numeroVoieEtablissement'],
-            'typeVoie' => $inseeJson['etablissement']['adresseEtablissement']['typeVoieEtablissement'],
-            'libelleVoie' => $inseeJson['etablissement']['adresseEtablissement']['libelleVoieEtablissement'],
-            'codePostal' => $inseeJson['etablissement']['adresseEtablissement']['codePostalEtablissement'],
-            'libelleCommune' => $inseeJson['etablissement']['adresseEtablissement']['libelleCommuneEtablissement'],
-            'dateCreation' => $inseeJson['etablissement']['dateCreationEtablissement'],
+            'siren' => $etablissement['siren'],
+            'tva' => $this->getTVACode($etablissement['siren']),
+            'nom' => $etablissement['uniteLegale']['denominationUniteLegale'],
+            'numeroVoie' => $etablissement['adresseEtablissement']['numeroVoieEtablissement'],
+            'typeVoie' => $etablissement['adresseEtablissement']['typeVoieEtablissement'],
+            'libelleVoie' => $etablissement['adresseEtablissement']['libelleVoieEtablissement'],
+            'codePostal' => $etablissement['adresseEtablissement']['codePostalEtablissement'],
+            'libelleCommune' => $etablissement['adresseEtablissement']['libelleCommuneEtablissement'],
+            'dateCreation' => $etablissement['dateCreationEtablissement'],
         ];
+        /*
+        ** https://sirene.fr/static-resources/htm/v_sommaire.htm#11
+        ** "denominationUniteLegale" est à null pour les personnes physiques. 
+        ** par exemple : M Moutarde avec le siret 83153941600014
+        */
+        if (is_null($datas['nom'])) {
+            $datas['nom'] = sprintf('%s %s',
+                $etablissement['uniteLegale']['sexeUniteLegale'],
+                $etablissement['uniteLegale']['nomUniteLegale']
+            );
+        }
         return [
             'statut' => 200,
             'datas' => $datas,

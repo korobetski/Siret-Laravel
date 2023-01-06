@@ -528,6 +528,106 @@ paths:
                       type: string
                       example: STR_ID_NOT_FOUND_IN_DATABASE
                       description: Description de l'erreur
+  /entreprises/{siret}:
+    post:
+      summary: Ajout d'un établissement dans la base de données automatiquement en récupérant les informations dans la base INSEE
+      parameters:
+        - name: siret
+          in: path
+          required: true
+          description: Numéro SIRET de l'entreprise (14 chiffres)
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+      responses:
+        '201': 
+          description: Un tableau JSON avec les informations de l'entreprise
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    statut:
+                      type: integer
+                      format: int64
+                      example: 201
+                      description: 201 Created
+                    datas:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: Id de l'entreprise
+                          example: 4
+                        siret:
+                          type: integer
+                          description: Numéro SIRET (14 chiffres)
+                          example: 85106293500016
+                        siren:
+                          type: integer
+                          description: Numéro SIREN (9 chiffres)
+                          example: 851062935
+                        tva:
+                          type: string
+                          description: Numéro TVA (FR + clé TVA + SIREN)
+                          example: "FR19851062935"
+                        nom:
+                          type: string
+                          description: Nom de l'entreprise
+                          example: "SCEA DE L'ABBAYE D'OIGNY"
+                        numeroVoie:
+                          type: integer
+                          description: Numéro de la voie
+                          example: null
+                        typeVoie:
+                          type: string
+                          description: Type de voie (Rue, Avenue, ...)
+                          example: null
+                        libelleVoie:
+                          type: string
+                          description: Nom de la voie
+                          example: "ABBAYE D'OIGNY"
+                        codePostal:
+                          type: integer
+                          description: Code Postal
+                          example: 21450
+                        libelleCommune:
+                          type: string
+                          description: Nom de la commune
+                          example: "OIGNY"
+                        dateCreation:
+                          type: string
+                          description: Date de la création de l'entreprise
+                          example: "2019-06-01"
+                        updated_at:
+                          type: string
+                          description: Date de la dernière mise à jour de l'entrée
+                          example: "2022-12-30T12:48:03.000000Z"
+                        created_at:
+                          type: string
+                          description: Date de la création de l'entrée
+                          example: "2022-12-30T10:36:35.000000Z"
+        '400':
+          description: Erreur 400, impossible d'ajouter l'entrée dans la base de données
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    statut:
+                      type: integer
+                      format: int64
+                      example: 400
+                      description: 400 Bad Request
+                    error:
+                      type: string
+                      example: STR_DATABASE_INSERT_ERROR
+                      description: Description de l'erreur
 
   /insee/{siret}:
     get:

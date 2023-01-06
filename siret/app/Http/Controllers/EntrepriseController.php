@@ -31,8 +31,14 @@ class EntrepriseController extends Controller
      */
     public function store(Request $request)
     {
-        $entreprise = Entreprise::create($request->input());
+        // on check avant tout si le siret n'est pas déjà présent dans la base    
+        $entreprise = Entreprise::firstWhere('siret', $request->input()['siret']);
+        if ($entreprise != null) {
+            return $this->errorResponse(400, 'STR_SIRET_DUPLICATION');
+        }
 
+        // ensuite on tente d'hydrater la base
+        $entreprise = Entreprise::create($request->input());
         if ($entreprise == null) {
             return $this->errorResponse(400, 'STR_DATABASE_INSERT_ERROR');
         }
@@ -41,6 +47,27 @@ class EntrepriseController extends Controller
             'statut' => 201,
             'datas' => $entreprise,
         ];
+    }
+
+    /**
+     * Ajoute une entreprise dans la base uniquement avec un numéro Siret en paramètre POST
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $siret
+     * @return \Illuminate\Http\Response
+     */
+    public function autoCreate(Request $request, $siret)
+    {
+        if (!is_numeric($siret) || strlen((string)$siret) != 14) {
+            return $this->errorResponse(400, 'STR_SIRET_INVALID');
+        }
+
+        $inseeResponse = $this->insee($siret);
+        if ($inseeResponse['statut'] != 200) {
+            return $inseeResponse;
+        }
+
+        return $this->store($request->replace($inseeResponse['datas']));
     }
 
     /**
@@ -142,6 +169,10 @@ class EntrepriseController extends Controller
 
     public function insee($siret)
     {
+        if (!is_numeric($siret) || strlen((string)$siret) != 14) {
+            return $this->errorResponse(400, 'STR_SIRET_INVALID');
+        }
+
         // clé perso de l'api Insee
         $token = "96b6a150-dc78-3da0-8cf2-9a8a93453bbf";
         $response = Http::withHeaders([

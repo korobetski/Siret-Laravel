@@ -20,4 +20,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::apiResource('/entreprises', EntrepriseController::class);
+Route::post('/entreprises/{siret}', [EntrepriseController::class, 'autoCreate']);
 Route::get('/insee/{siret}', [EntrepriseController::class, 'insee']);

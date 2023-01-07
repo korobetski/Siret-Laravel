@@ -13,10 +13,16 @@ class EntrepriseController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        // TODO : mettre la limite de pagination en paramètre
-        $entreprises = Entreprise::paginate(2)->withPath('/entreprises');
+        $limit = $request->has('limit') ? $request->limit : 6;
+
+        // ->withPath('/entreprises') permet de relativiser les url
+        if ($request->has('query')) {
+            $entreprises = Entreprise::search($request->query->get("query"))->paginate($limit)->withPath('/entreprises')->withQueryString();
+        } else {
+            $entreprises = Entreprise::paginate($limit)->withPath('/entreprises')->withQueryString();
+        }
         return [
             'statut' => 200,
             'pagination' => $entreprises

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
 class Entreprise extends Model
 {
     use HasFactory;
+    use Searchable;
 
     /**
      * The table associated with the model.
@@ -29,4 +31,18 @@ class Entreprise extends Model
         'libelleCommune',
         'dateCreation'
     ];
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array
+     */
+    public function toSearchableArray()
+    {
+        return [
+            'nom' => $this->nom,
+            'codePostal' => (int) $this->codePostal,
+            'libelleCommune' => $this->libelleCommune,
+        ];
+    }
 }

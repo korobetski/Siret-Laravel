@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Entreprise;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class EntrepriseController extends Controller
 {
+    const CACHE_MAX_AGE = 60;
+
     /**
      * Display a listing of the resource.
      *
@@ -19,14 +22,19 @@ class EntrepriseController extends Controller
 
         // ->withPath('/entreprises') permet de relativiser les url
         if ($request->has('query')) {
-            $entreprises = Entreprise::search($request->query->get("query"))->paginate($limit)->withPath('/entreprises')->withQueryString();
+            $entreprises = Cache::remember('entreprises&'.json_encode($request->all()), self::CACHE_MAX_AGE, function () use ($limit, $request) {
+                return Entreprise::search($request->query->get("query"))->paginate($limit)->withPath('/entreprises')->withQueryString();
+            });
         } else {
-            $entreprises = Entreprise::paginate($limit)->withPath('/entreprises')->withQueryString();
+            $entreprises = Cache::remember('entreprises&'.json_encode($request->all()), self::CACHE_MAX_AGE, function () use ($limit) {
+                return Entreprise::paginate($limit)->withPath('/entreprises')->withQueryString();
+            });
         }
-        return [
-            'statut' => 200,
-            'pagination' => $entreprises
-        ];
+        
+        return response()->json([
+            'statut' => '200',
+            'pagination' => $entreprises,
+        ], 200)->header('Cache-Control', "max_age=".self::CACHE_MAX_AGE);
     }
 
     /**
@@ -37,7 +45,7 @@ class EntrepriseController extends Controller
      */
     public function store(Request $request)
     {
-        // on check avant tout si le siret n'est pas déjà présent dans la base    
+        // on check avant tout si le siret n'est pas déjà présent dans la base
         $entreprise = Entreprise::firstWhere('siret', $request->input()['siret']);
         if ($entreprise != null) {
             return $this->errorResponse(400, 'STR_SIRET_DUPLICATION');
@@ -49,10 +57,8 @@ class EntrepriseController extends Controller
             return $this->errorResponse(400, 'STR_DATABASE_INSERT_ERROR');
         }
 
-        return [
-            'statut' => 201,
-            'datas' => $entreprise,
-        ];
+        Cache::flush();
+        return $this->datasResponse(201, $entreprise);
     }
 
     /**
@@ -87,16 +93,15 @@ class EntrepriseController extends Controller
         if (!is_numeric($id)) {
             return $this->errorResponse(400, 'STR_ID_MUST_BE_NUMERIC');
         }
-
-        $entreprise = Entreprise::find($id);
+        
+        $entreprise = Cache::remember('entreprise&'.$id, self::CACHE_MAX_AGE, function () use ($id) {
+            return Entreprise::find($id);
+        });
         if ($entreprise == null) {
             return $this->errorResponse(404, 'STR_ID_NOT_FOUND_IN_DATABASE');
         }
 
-        return [
-            'statut' => 200,
-            'datas' => $entreprise,
-        ];
+        return $this->datasResponse(200, $entreprise)->header('Cache-Control', "max_age=".self::CACHE_MAX_AGE);
     }
 
     /**
@@ -116,7 +121,8 @@ class EntrepriseController extends Controller
         if ($entreprise == null) {
             return $this->errorResponse(404, 'STR_ID_NOT_FOUND_IN_DATABASE');
         }
-
+        //Cache::forget('entreprise&'.$id);
+        Cache::flush();
         $nouvellesDonnees = $request->input();
         $entreprise->siret = $nouvellesDonnees['siret'];
         $entreprise->siren = $nouvellesDonnees['siren'];
@@ -130,10 +136,7 @@ class EntrepriseController extends Controller
         $entreprise->dateCreation = $nouvellesDonnees['dateCreation'];
         $entreprise->save();
 
-        return [
-            'statut' => 200,
-            'datas' => $entreprise,
-        ];
+        return $this->datasResponse(200, $entreprise);
     }
 
     /**
@@ -153,10 +156,8 @@ class EntrepriseController extends Controller
             return $this->errorResponse(404, 'STR_DELETE_ENTRY_ERROR');
         }
 
-        return [
-            'statut' => 200,
-            'datas' => 'STR_ENTRY_DELETED',
-        ];
+        Cache::flush();
+        return $this->datasResponse(200, 'STR_ENTRY_DELETED');
     }
 
     /**
@@ -216,10 +217,21 @@ class EntrepriseController extends Controller
                 $etablissement['uniteLegale']['nomUniteLegale']
             );
         }
-        return [
-            'statut' => 200,
-            'datas' => $datas,
-        ];
+        return $this->datasResponse(200, $datas);
+    }
+
+    /**
+     * Formate les réponses json
+     *
+     * @param  int  $code codes de statut de réponse HTTP
+     * @param  string  $datas données à transmettre
+     * @return object réponse en json
+     */
+    private function datasResponse($code, $datas) {
+        return response()->json([
+            'statut' => $code,
+            'datas' => $datas
+        ], $code);
     }
 
     /**
@@ -230,9 +242,9 @@ class EntrepriseController extends Controller
      * @return object réponse en json
      */
     private function errorResponse($code, $message) {
-        return [
+        return response()->json([
             'statut' => $code,
             'error' => $message
-        ];
+        ], $code);
     }
 }

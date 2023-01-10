@@ -1,8 +1,8 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
   title: Entreprise API
   description: Here goes description
-  version: 0.1
+  version: "0.1"
 
 servers:
   - url: http://localhost:8000/api
@@ -104,59 +104,43 @@ paths:
                             example: "2022-12-30T10:36:35.000000Z"
     post:
       summary: Ajout d'un établissement dans la base de données
-      parameters:
-        - name: siret
-          required: true
-          description: Numéro SIRET de l'entreprise (14 chiffres)
-        - name: siren
-          required: true
-          description: Numéro SIREN (9 chiffres)
-          schema:
-            type : integer
-            format: int64
-            minimum: 1
-        - name: tva
-          required: true
-          description: Numéro TVA (FR + clé TVA + SIREN)
-          schema:
-            type : string
-        - name: nom
-          required: true
-          description: Nom de l'entreprise
-          schema:
-            type : string
-        - name: numeroVoie
-          description: Numéro de la voie
-          schema:
-            type : integer
-            format: int64
-            minimum: 1
-        - name: typeVoie
-          description: Type de voie (Rue, Avenue, ...)
-          schema:
-            type : string
-        - name: libelleVoie
-          required: true
-          description: Nom de la voie
-          schema:
-            type : string
-        - name: codePostal
-          required: true
-          description: Code Postal
-          schema:
-            type : integer
-            format: int64
-            minimum: 1
-        - name: libelleCommune
-          required: true
-          description: Nom de la commune
-          schema:
-            type : string
-        - name: dateCreation
-          required: true
-          description: Date de la création de l'entreprise
-          schema:
-            type : string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                siret: 
+                  description: Numéro SIRET de l'entreprise (14 chiffres)
+                  type: integer
+                siren:
+                  description: Numéro SIREN (9 chiffres)
+                  type: integer
+                tva:
+                  description: Numéro TVA (FR + clé TVA + SIREN)
+                  type: string
+                nom:
+                  description: Nom de l'entreprise
+                  type: string
+                numeroVoie:
+                  description: Numéro de la voie
+                  type: integer
+                typeVoie:
+                  description: Type de voie (Rue, Avenue, ...)
+                  type: string
+                libelleVoie:
+                  description: Nom de la voie
+                  type: string
+                codePostal:
+                  description: Code Postal
+                  type: integer
+                libelleCommune:
+                  description: Nom de la commune
+                  type: string
+                dateCreation:
+                  description: Date de la création de l'entreprise
+                  type: string
+              required: [siret, siren, tva, nom, libelleVoie, codePostal, libelleCommune, dateCreation]
       responses:
         '201': 
           description: Un tableau JSON avec les informations de l'entreprise
@@ -348,66 +332,51 @@ paths:
     put:
       summary: Mise à jour d'un établissement par son id
       parameters:
-        - name: id
-          in: path
+        - in: path
+          name: id
           required: true
           description: Id de l'entreprise dans la base de données
           schema:
             type : integer
             format: int64
             minimum: 1
-        - name: siret
-          required: true
-          description: Numéro SIRET de l'entreprise (14 chiffres)
-        - name: siren
-          required: true
-          description: Numéro SIREN (9 chiffres)
-          schema:
-            type : integer
-            format: int64
-            minimum: 1
-        - name: tva
-          required: true
-          description: Numéro TVA (FR + clé TVA + SIREN)
-          schema:
-            type : string
-        - name: nom
-          required: true
-          description: Nom de l'entreprise
-          schema:
-            type : string
-        - name: numeroVoie
-          description: Numéro de la voie
-          schema:
-            type : integer
-            format: int64
-            minimum: 1
-        - name: typeVoie
-          description: Type de voie (Rue, Avenue, ...)
-          schema:
-            type : string
-        - name: libelleVoie
-          required: true
-          description: Nom de la voie
-          schema:
-            type : string
-        - name: codePostal
-          required: true
-          description: Code Postal
-          schema:
-            type : integer
-            format: int64
-            minimum: 1
-        - name: libelleCommune
-          required: true
-          description: Nom de la commune
-          schema:
-            type : string
-        - name: dateCreation
-          required: true
-          description: Date de la création de l'entreprise
-          schema:
-            type : string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                siret: 
+                  description: Numéro SIRET de l'entreprise (14 chiffres)
+                  type: integer
+                siren:
+                  description: Numéro SIREN (9 chiffres)
+                  type: integer
+                tva:
+                  description: Numéro TVA (FR + clé TVA + SIREN)
+                  type: string
+                nom:
+                  description: Nom de l'entreprise
+                  type: string
+                numeroVoie:
+                  description: Numéro de la voie
+                  type: integer
+                typeVoie:
+                  description: Type de voie (Rue, Avenue, ...)
+                  type: string
+                libelleVoie:
+                  description: Nom de la voie
+                  type: string
+                codePostal:
+                  description: Code Postal
+                  type: integer
+                libelleCommune:
+                  description: Nom de la commune
+                  type: string
+                dateCreation:
+                  description: Date de la création de l'entreprise
+                  type: string
+              required: [siret, siren, tva, nom, libelleVoie, codePostal, libelleCommune, dateCreation]
       responses:
         '200': 
           description: Un tableau JSON avec les informations de l'entreprise

@@ -74,7 +74,7 @@ class EntrepriseController extends Controller
             return $this->errorResponse(400, 'STR_SIRET_INVALID');
         }
 
-        $inseeResponse = $this->insee($siret);
+        $inseeResponse = $this->insee($siret)->original;
         if ($inseeResponse['statut'] != 200) {
             return $inseeResponse;
         }
@@ -227,7 +227,8 @@ class EntrepriseController extends Controller
      * @param  string  $datas données à transmettre
      * @return object réponse en json
      */
-    private function datasResponse($code, $datas) {
+    private function datasResponse($code, $datas)
+    {
         return response()->json([
             'statut' => $code,
             'datas' => $datas
@@ -241,7 +242,8 @@ class EntrepriseController extends Controller
      * @param  string  $message description de l'erreur
      * @return object réponse en json
      */
-    private function errorResponse($code, $message) {
+    private function errorResponse($code, $message)
+    {
         return response()->json([
             'statut' => $code,
             'error' => $message

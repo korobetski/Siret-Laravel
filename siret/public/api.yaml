@@ -24,11 +24,13 @@ paths:
           name: page
           schema:
             type: integer
+            minimum: 1
           description: L'index de la page en cours en fonction du nombre de résultat et de la limite
         - in: query
           name: limit
           schema:
             type: integer
+            minimum: 1
           description: Le nombre d'élements retournés. (6 par défaut)
       responses:
         '200': 
@@ -239,7 +241,7 @@ paths:
           description: Id de l'entreprise dans la base de données
           schema:
             type : integer
-            format: int64
+            format: uuid
             minimum: 1
       responses:
         '200': 
@@ -338,7 +340,7 @@ paths:
           description: Id de l'entreprise dans la base de données
           schema:
             type : integer
-            format: int64
+            format: uuid
             minimum: 1
       requestBody:
         content:
@@ -474,7 +476,7 @@ paths:
           description: Id de l'entreprise dans la base de données
           schema:
             type : integer
-            format: int64
+            format: uuid
             minimum: 1
       responses:
         '200': 

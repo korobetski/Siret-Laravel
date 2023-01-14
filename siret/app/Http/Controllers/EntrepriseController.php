@@ -181,7 +181,7 @@ class EntrepriseController extends Controller
         }
 
         // clé perso de l'api Insee
-        $token = "96b6a150-dc78-3da0-8cf2-9a8a93453bbf";
+        $token = "b4d36b3d-369f-322f-964e-b48c447a3065";
         $response = Http::withHeaders([
             'Authorization' => 'Bearer '.$token,
             'Accept' => 'application/json',
